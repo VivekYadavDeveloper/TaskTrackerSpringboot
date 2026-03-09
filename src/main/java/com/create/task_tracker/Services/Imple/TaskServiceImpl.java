@@ -8,9 +8,11 @@ import com.create.task_tracker.Repositories.TaskListRepository;
 import com.create.task_tracker.Repositories.TaskRepository;
 import com.create.task_tracker.Services.TaskService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,6 +32,7 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.findByTaskListId(taskListId);
     }
 
+    @Transactional
     @Override
     public TaskModel createTask(UUID taskListId, TaskModel taskModel) {
 
@@ -66,13 +69,37 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.findByTaskListIdAndId(taskListId, taskId);
     }
 
+    @Transactional
     @Override
     public TaskModel updateTask(UUID taskListId, UUID taskId, TaskModel taskModel) {
-        return null;
+
+        if (taskModel.getId() == null) {
+            throw new IllegalArgumentException("Task ID cannot be null");
+        }
+        if (!Objects.equals(taskId, taskModel.getId())) {
+            throw new IllegalArgumentException("Task ID in the path and request body must match");
+        }
+        if (taskModel.getPriority() == null) {
+            throw new IllegalArgumentException("Task Priority cannot be null");
+        }
+        if (taskModel.getStatus() == null) {
+            throw new IllegalArgumentException("Task Status cannot be null");
+        }
+        TaskModel existingTask = taskRepository.findByTaskListIdAndId(taskListId,
+                taskId).orElseThrow(() -> new IllegalArgumentException("TaskList with ID " + taskListId + taskId + " does not exist"));
+        existingTask.setTitle(taskModel.getTitle());
+        existingTask.setDescription(taskModel.getDescription());
+        existingTask.setDueDate(taskModel.getDueDate());
+        existingTask.setPriority(taskModel.getPriority());
+        existingTask.setStatus(taskModel.getStatus());
+        existingTask.setUpdated(LocalDateTime.now());
+
+        return taskRepository.save(existingTask);
     }
 
+    @Transactional
     @Override
     public void deleteTask(UUID taskListId, UUID taskId) {
-
+        taskRepository.deleteByTaskListIdAndId(taskListId, taskId);
     }
 }
