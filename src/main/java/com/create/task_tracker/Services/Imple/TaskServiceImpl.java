@@ -61,6 +61,7 @@ public class TaskServiceImpl implements TaskService {
                 now,
                 now
         );
+        System.out.println("Saving task with title: " + taskToSave.getTitle());
         return taskRepository.save(taskToSave);
     }
 

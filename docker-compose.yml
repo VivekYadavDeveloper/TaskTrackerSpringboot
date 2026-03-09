@@ -13,4 +13,5 @@ services:
 
       POSTGRES_USER: create
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydb
+#      DATABASE NAME HERE
+      POSTGRES_DB: task_tracker_db
